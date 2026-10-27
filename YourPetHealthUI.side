@@ -1,0 +1,738 @@
+{
+  "id": "8e261f95-2f4d-54e6-ade0-75e940d48c45",
+  "version": "3.0",
+  "name": "YourPetHealth - Testes de Interface",
+  "url": "http://localhost:8081",
+  "urls": [
+    "http://localhost:8081"
+  ],
+  "timeout": 15000,
+  "delay": 0,
+  "plugins": [],
+  "tests": [
+    {
+      "id": "d5d61229-aa92-519f-9e7d-5f78149f5228",
+      "name": "00 - Executar os 6 testes em sequência",
+      "commands": [
+        {
+          "id": "4f72262d-e2ee-5197-a909-a564446722de",
+          "comment": "Executa o CT01.1 nesta mesma janela",
+          "command": "run",
+          "target": "CT01.1 - Criar conta de responsável com dados válidos",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "ff18b0d0-08cf-5a9f-88b5-ecc8bafc4785",
+          "comment": "Executa o CT02.1 nesta mesma janela",
+          "command": "run",
+          "target": "CT02.1 - Entrar com e-mail e senha corretos",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "94e55646-c8e1-50f2-8d0b-a482a21449bd",
+          "comment": "Executa o CT02.2 nesta mesma janela",
+          "command": "run",
+          "target": "CT02.2 - Entrar com senha incorreta",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "400f41bb-cd09-5af0-a87c-901b688e42b7",
+          "comment": "Executa o CT04.1 nesta mesma janela",
+          "command": "run",
+          "target": "CT04.1 - Cadastrar pet com dados válidos",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "91536566-51a7-563d-98f2-d94fdc3a8250",
+          "comment": "Executa o CT04.2 nesta mesma janela",
+          "command": "run",
+          "target": "CT04.2 - Cadastrar pet com peso inválido",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "02b7e905-7331-5082-a04d-1ebe66f88221",
+          "comment": "Executa o CT15.1 nesta mesma janela",
+          "command": "run",
+          "target": "CT15.1 - Responsável tenta abrir a agenda do veterinário",
+          "targets": [],
+          "value": ""
+        }
+      ]
+    },
+    {
+      "id": "0ba89b2e-32fc-5f74-8921-b7433c18acdf",
+      "name": "CT01.1 - Criar conta de responsável com dados válidos",
+      "commands": [
+        {
+          "id": "97447246-e931-540b-bed3-3d4fad499f39",
+          "comment": "Abre o app no navegador",
+          "command": "open",
+          "target": "/login",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "6f3faa13-2ca0-50f1-89e2-b7c80557293f",
+          "comment": "Pré-condição: nenhuma sessão ativa (apaga o login guardado no navegador)",
+          "command": "executeScript",
+          "target": "localStorage.clear(); sessionStorage.clear();",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "f6101514-73c3-5c8c-ad87-fa286bea6a24",
+          "comment": "Recarrega a tela de login já sem sessão",
+          "command": "open",
+          "target": "/login",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "00da2ec0-87fd-579f-a6c5-8d08e0ce1a4b",
+          "comment": "Espera a tela de login aparecer",
+          "command": "waitForElementVisible",
+          "target": "linkText=Não tem conta? Cadastre-se",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "5055e3c4-f624-5cc1-88b9-a9ed2dcc585a",
+          "comment": "Passo 1: tocar no link para criar conta",
+          "command": "click",
+          "target": "linkText=Não tem conta? Cadastre-se",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "c754dd04-fac7-5dbe-9823-f0fc74d2295c",
+          "comment": "Espera o formulário de cadastro",
+          "command": "waitForElementVisible",
+          "target": "css=input[placeholder=\"Seu nome\"]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "f0a74c06-3af4-5cf2-b27f-64bd07c5153b",
+          "comment": "Gera um e-mail novo a cada execução e guarda na variável email, para o teste poder ser repetido",
+          "command": "executeScript",
+          "target": "return 'tutor.ui' + Date.now() + '@yourpet.test'",
+          "targets": [],
+          "value": "email"
+        },
+        {
+          "id": "2e0fd14a-f14b-51a8-b2e5-863fdeefc154",
+          "comment": "Passo 2: nome",
+          "command": "type",
+          "target": "css=input[placeholder=\"Seu nome\"]",
+          "targets": [],
+          "value": "Ana Tutora Teste"
+        },
+        {
+          "id": "31f0de8f-1736-52f5-b815-30da8bfe7d49",
+          "comment": "Passo 2: e-mail (variável gerada acima)",
+          "command": "type",
+          "target": "xpath=(//input[@placeholder='voce@email.com'])[last()]",
+          "targets": [],
+          "value": "${email}"
+        },
+        {
+          "id": "a086bd3f-5dd3-5d65-b0ff-5d3ed0d292d8",
+          "comment": "Passo 2: telefone",
+          "command": "type",
+          "target": "css=input[placeholder=\"11911111111\"]",
+          "targets": [],
+          "value": "11911112222"
+        },
+        {
+          "id": "24d953fb-9dec-53ea-b771-067fd80e8778",
+          "comment": "Passo 2: senha",
+          "command": "type",
+          "target": "css=input[placeholder=\"Mínimo de 8 caracteres\"]",
+          "targets": [],
+          "value": "Senha@123"
+        },
+        {
+          "id": "9c8f284e-ca46-53ae-b6c7-28592b381421",
+          "comment": "Passo 2: confirmação da senha",
+          "command": "type",
+          "target": "css=input[placeholder=\"Repita a senha\"]",
+          "targets": [],
+          "value": "Senha@123"
+        },
+        {
+          "id": "0c9ba738-866e-5caf-ad13-c0c39a14eb1e",
+          "comment": "Passo 3: selecionar o perfil Responsável (Tutor)",
+          "command": "click",
+          "target": "xpath=//div[text()='Tutor']",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "0d7ef577-019b-51a8-8e66-8f2ccffa7ab7",
+          "comment": "Passo 4: tocar em Cadastrar",
+          "command": "click",
+          "target": "xpath=//div[text()='Cadastrar']",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "b84c0f96-adf0-5d1f-8a8c-864374f3548f",
+          "comment": "Resultado esperado: a conta é criada e abre a tela inicial",
+          "command": "waitForElementVisible",
+          "target": "xpath=//div[normalize-space(.)='Olá, Ana Tutora Teste']",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "a6821fb5-bbef-538a-aca5-7f416d2bb616",
+          "comment": "A saudação mostra o nome cadastrado",
+          "command": "assertText",
+          "target": "xpath=//div[normalize-space(.)='Olá, Ana Tutora Teste']",
+          "targets": [],
+          "value": "Olá, Ana Tutora Teste"
+        },
+        {
+          "id": "1811947b-7823-54c9-b9f1-3be3f4d46cd6",
+          "comment": "É a tela inicial do responsável",
+          "command": "assertElementPresent",
+          "target": "xpath=//div[text()='Aqui está o resumo da saúde dos seus pets.']",
+          "targets": [],
+          "value": ""
+        }
+      ]
+    },
+    {
+      "id": "52a98e5a-1c77-5c75-ac69-41207d86f604",
+      "name": "CT02.1 - Entrar com e-mail e senha corretos",
+      "commands": [
+        {
+          "id": "db8b8e21-d024-5f9f-9b20-d92d859b7329",
+          "comment": "Pré-condição: conta de Ana cadastrada (executa o CT01.1)",
+          "command": "run",
+          "target": "CT01.1 - Criar conta de responsável com dados válidos",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "7aa30d5c-b5f1-5dd9-8b0c-57b9d131732a",
+          "comment": "Pré-condição: nenhuma sessão ativa",
+          "command": "executeScript",
+          "target": "localStorage.clear(); sessionStorage.clear();",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "e014643d-1cd1-5a58-9866-c54c9e67d0f6",
+          "comment": "Abre a tela de login",
+          "command": "open",
+          "target": "/login",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "b7c1763f-0063-5e77-bbb4-320745cb1820",
+          "comment": "Espera a tela de login aparecer",
+          "command": "waitForElementVisible",
+          "target": "css=input[placeholder=\"voce@email.com\"]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "4af3d808-07a8-5d07-936e-5390a68f68c8",
+          "comment": "Passo 1: informar o e-mail da conta criada",
+          "command": "type",
+          "target": "css=input[placeholder=\"voce@email.com\"]",
+          "targets": [],
+          "value": "${email}"
+        },
+        {
+          "id": "27e0d73d-d939-5138-8fc8-ea3820d33648",
+          "comment": "Passo 2: informar a senha",
+          "command": "type",
+          "target": "css=input[type=\"password\"]",
+          "targets": [],
+          "value": "Senha@123"
+        },
+        {
+          "id": "ef31fa36-82ef-5ad9-9421-442ec13c0de5",
+          "comment": "Passo 3: tocar em Entrar",
+          "command": "click",
+          "target": "xpath=//div[text()='Entrar']",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "a3a00048-df88-53de-9082-4a2fa6e25c84",
+          "comment": "Resultado esperado: abre a tela inicial do responsável",
+          "command": "waitForElementVisible",
+          "target": "xpath=//div[normalize-space(.)='Olá, Ana Tutora Teste']",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "32d91a5b-8794-5a90-816d-ab6ce3e75cdb",
+          "comment": "A saudação exibe o nome Ana Tutora Teste",
+          "command": "assertText",
+          "target": "xpath=//div[normalize-space(.)='Olá, Ana Tutora Teste']",
+          "targets": [],
+          "value": "Olá, Ana Tutora Teste"
+        }
+      ]
+    },
+    {
+      "id": "68fa05eb-1ef3-5a27-b613-bf4bf70c19eb",
+      "name": "CT02.2 - Entrar com senha incorreta",
+      "commands": [
+        {
+          "id": "8e695c48-c7e8-59b8-9aae-1bbefe3ff35d",
+          "comment": "Pré-condição: conta de Ana cadastrada (executa o CT01.1)",
+          "command": "run",
+          "target": "CT01.1 - Criar conta de responsável com dados válidos",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "bc59687b-83c6-5803-a686-6820b9189c56",
+          "comment": "Pré-condição: nenhuma sessão ativa",
+          "command": "executeScript",
+          "target": "localStorage.clear(); sessionStorage.clear();",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "482dc012-e364-58e2-88cb-44655b99897c",
+          "comment": "Abre a tela de login",
+          "command": "open",
+          "target": "/login",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "27a336a8-5899-55b8-8d37-e4f2f589a835",
+          "comment": "Espera a tela de login aparecer",
+          "command": "waitForElementVisible",
+          "target": "css=input[placeholder=\"voce@email.com\"]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "b227903a-174d-5dd5-b52d-0d64b5dca3a8",
+          "comment": "Passo 1: informar o e-mail da conta criada",
+          "command": "type",
+          "target": "css=input[placeholder=\"voce@email.com\"]",
+          "targets": [],
+          "value": "${email}"
+        },
+        {
+          "id": "2a095705-88f0-504c-bb07-8794ad749d7b",
+          "comment": "Passo 2: informar uma senha incorreta",
+          "command": "type",
+          "target": "css=input[type=\"password\"]",
+          "targets": [],
+          "value": "SenhaErrada1"
+        },
+        {
+          "id": "11e8faf1-7aa0-531f-8f96-b7d4174ae512",
+          "comment": "Passo 3: tocar em Entrar",
+          "command": "click",
+          "target": "xpath=//div[text()='Entrar']",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "f0500063-3bdf-53b8-a86d-8cdbb9105843",
+          "comment": "Resultado esperado: aparece a mensagem de e-mail ou senha inválidos",
+          "command": "waitForElementVisible",
+          "target": "xpath=//div[text()='E-mail ou senha inválidos']",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "5afdd927-2127-555c-99bf-f158a0352255",
+          "comment": "A mensagem não diz qual dos dois campos está errado",
+          "command": "assertText",
+          "target": "xpath=//div[text()='E-mail ou senha inválidos']",
+          "targets": [],
+          "value": "E-mail ou senha inválidos"
+        },
+        {
+          "id": "179da8ef-08c9-511b-af1b-3d4f4355dab7",
+          "comment": "O aplicativo permanece na tela de login",
+          "command": "assertElementPresent",
+          "target": "xpath=//div[text()='Entrar']",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "b4b6b2d2-7d4b-556e-a783-1eae267dae58",
+          "comment": "A tela inicial não é aberta",
+          "command": "assertElementNotPresent",
+          "target": "xpath=//div[normalize-space(.)='Olá, Ana Tutora Teste']",
+          "targets": [],
+          "value": ""
+        }
+      ]
+    },
+    {
+      "id": "84346520-7014-53d5-b757-b00ad066be75",
+      "name": "CT04.1 - Cadastrar pet com dados válidos",
+      "commands": [
+        {
+          "id": "6905ba44-04be-5365-8c86-b3d4c4b02fe6",
+          "comment": "Pré-condição: Ana conectada e sem pets (conta nova do CT01.1)",
+          "command": "run",
+          "target": "CT01.1 - Criar conta de responsável com dados válidos",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "bd8374d2-de64-51bc-8301-17a0eb480b3e",
+          "comment": "Passo 1: abrir Meus Pets",
+          "command": "click",
+          "target": "xpath=//div[text()='Meus Pets']",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "aae71c48-1484-5e30-b9f4-584bdf48cc5f",
+          "comment": "Pré-condição: Ana ainda não possui o pet Thor",
+          "command": "waitForElementVisible",
+          "target": "xpath=//div[text()='Nenhum pet cadastrado']",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "aa8f6a78-3118-5f46-b0a9-893f44d7bd29",
+          "comment": "Passo 2: tocar no botão de adicionar",
+          "command": "click",
+          "target": "xpath=//div[text()='Cadastrar Pet']",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "2ddcea99-30ca-5100-823b-ba91b5b7e038",
+          "comment": "Espera o formulário do pet",
+          "command": "waitForElementVisible",
+          "target": "css=input[placeholder=\"Ex: Thor\"]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "dc0af107-e158-5ce4-a84e-68a56c1b0703",
+          "comment": "Passo 3: nome",
+          "command": "type",
+          "target": "css=input[placeholder=\"Ex: Thor\"]",
+          "targets": [],
+          "value": "Thor"
+        },
+        {
+          "id": "896cb9a9-8b9a-5d7e-8cd1-484c692c8fd9",
+          "comment": "Passo 3: raça",
+          "command": "type",
+          "target": "css=input[placeholder=\"Ex: Golden Retriever\"]",
+          "targets": [],
+          "value": "Golden Retriever"
+        },
+        {
+          "id": "0e04a7db-a804-5036-956b-64e9cc472671",
+          "comment": "Passo 3: idade",
+          "command": "type",
+          "target": "css=input[placeholder=\"0 a 30\"]",
+          "targets": [],
+          "value": "7"
+        },
+        {
+          "id": "7bf3ded6-1040-5b95-80ab-ae8af0030694",
+          "comment": "Passo 3: peso",
+          "command": "type",
+          "target": "css=input[placeholder=\"Ex: 41.2\"]",
+          "targets": [],
+          "value": "41.2"
+        },
+        {
+          "id": "6631f410-c25d-51e0-9c43-2d525a5c535b",
+          "comment": "Passo 3: sexo",
+          "command": "click",
+          "target": "xpath=//div[text()='Macho']",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "2d49d1df-4aa8-5c04-8efc-2c05dbb2a6aa",
+          "comment": "Guarda o aviso de sucesso do app em uma variável, em vez de abrir a janela de alerta do navegador",
+          "command": "executeScript",
+          "target": "window.alert = function (texto) { window.ultimoAviso = texto; };",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "7521f685-88d3-5209-998d-c35de97a63a4",
+          "comment": "Passo 4: tocar em Cadastrar Pet (salvar)",
+          "command": "click",
+          "target": "xpath=(//div[text()='Cadastrar Pet'])[last()]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "37dc5969-2762-5d6b-960f-c75d9aeb60f2",
+          "comment": "Resultado esperado: volta para a lista e Thor aparece",
+          "command": "waitForElementVisible",
+          "target": "xpath=//div[text()='Thor']",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "8c26c16b-eb86-5587-8b0e-2b2a7511e564",
+          "comment": "Thor aparece com raça Golden Retriever, 7 anos e 41.2 kg",
+          "command": "assertText",
+          "target": "xpath=//div[text()='Thor']/../following-sibling::div[1]",
+          "targets": [],
+          "value": "Golden Retriever • 7 anos • 41.2 kg"
+        },
+        {
+          "id": "dc3af6ea-fb9d-5f16-9d46-edf3f7b1081a",
+          "comment": "Lê o aviso exibido pelo app",
+          "command": "executeScript",
+          "target": "return String(window.ultimoAviso).replace(/\\s+/g, ' ')",
+          "targets": [],
+          "value": "aviso"
+        },
+        {
+          "id": "229bc86d-8d5a-5c1a-acd3-ec82a1a422ec",
+          "comment": "O app avisa que o pet foi cadastrado",
+          "command": "assert",
+          "target": "aviso",
+          "targets": [],
+          "value": "Pronto Pet cadastrado com sucesso."
+        }
+      ]
+    },
+    {
+      "id": "3e253fe0-5a79-5b17-8fb1-7673af890d0e",
+      "name": "CT04.2 - Cadastrar pet com peso inválido",
+      "commands": [
+        {
+          "id": "24ce8d90-4d5f-52e1-a095-ce3d1618bb90",
+          "comment": "Pré-condição: Ana conectada (conta nova do CT01.1)",
+          "command": "run",
+          "target": "CT01.1 - Criar conta de responsável com dados válidos",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "b53c5cb3-b24f-5978-a312-0ff09951d825",
+          "comment": "Passo 1: abrir Meus Pets",
+          "command": "click",
+          "target": "xpath=//div[text()='Meus Pets']",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "004d1ee2-4515-5294-b19a-487abfce01b4",
+          "comment": "Espera a lista de pets",
+          "command": "waitForElementVisible",
+          "target": "xpath=//div[text()='Cadastrar Pet']",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "cb17df2b-8c30-5edd-a4ea-ec3f3d173479",
+          "comment": "Passo 2: tocar no botão de adicionar",
+          "command": "click",
+          "target": "xpath=//div[text()='Cadastrar Pet']",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "e3b811ca-bd00-5a75-8043-1314baf4b4ac",
+          "comment": "Espera o formulário do pet",
+          "command": "waitForElementVisible",
+          "target": "css=input[placeholder=\"Ex: Thor\"]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "4920c100-db72-5efa-87c4-8d7d0f148548",
+          "comment": "Passo 3: nome",
+          "command": "type",
+          "target": "css=input[placeholder=\"Ex: Thor\"]",
+          "targets": [],
+          "value": "Luna"
+        },
+        {
+          "id": "1711e994-fae7-59de-9177-5f99cc1c33c8",
+          "comment": "Passo 3: raça",
+          "command": "type",
+          "target": "css=input[placeholder=\"Ex: Golden Retriever\"]",
+          "targets": [],
+          "value": "SRD"
+        },
+        {
+          "id": "2a7cc3ce-c2e2-55d2-945f-34d7e04e491c",
+          "comment": "Passo 3: idade",
+          "command": "type",
+          "target": "css=input[placeholder=\"0 a 30\"]",
+          "targets": [],
+          "value": "3"
+        },
+        {
+          "id": "c6cd1b5a-5d1f-5115-89bf-7845b80f854a",
+          "comment": "Passo 3: peso inválido",
+          "command": "type",
+          "target": "css=input[placeholder=\"Ex: 41.2\"]",
+          "targets": [],
+          "value": "0"
+        },
+        {
+          "id": "8b2ec619-d2aa-5956-8e0e-c5cfd35cd8de",
+          "comment": "Passo 3: sexo",
+          "command": "click",
+          "target": "xpath=//div[text()='Fêmea']",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "d8808ca7-0668-525e-8656-ea13da88ceba",
+          "comment": "Passo 4: tocar em Cadastrar Pet (salvar)",
+          "command": "click",
+          "target": "xpath=(//div[text()='Cadastrar Pet'])[last()]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "dee09b5a-ff14-57c6-9a53-c04182023554",
+          "comment": "Resultado esperado: mensagem de validação no campo Peso",
+          "command": "waitForElementVisible",
+          "target": "xpath=//div[text()='Peso deve ser maior que 0 e menor que 200']",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "36806e9e-049c-5220-b71f-a7f8717934f6",
+          "comment": "Texto da mensagem de validação",
+          "command": "assertText",
+          "target": "xpath=//div[text()='Peso deve ser maior que 0 e menor que 200']",
+          "targets": [],
+          "value": "Peso deve ser maior que 0 e menor que 200"
+        },
+        {
+          "id": "02e6de1a-1c76-5f25-a0b2-b5d0ed025311",
+          "comment": "O pet não é cadastrado: o formulário continua aberto",
+          "command": "assertElementPresent",
+          "target": "css=input[placeholder=\"Ex: Thor\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "afb0327c-c0f5-50fd-b32c-f8bffed5bdd7",
+          "comment": "Luna não aparece na lista",
+          "command": "assertElementNotPresent",
+          "target": "xpath=//div[text()='Luna']",
+          "targets": [],
+          "value": ""
+        }
+      ]
+    },
+    {
+      "id": "50f720c0-731b-5818-854a-c6581f7171ad",
+      "name": "CT15.1 - Responsável tenta abrir a agenda do veterinário",
+      "commands": [
+        {
+          "id": "71c463b9-157a-57da-ab75-f32aca0d0d54",
+          "comment": "Pré-condição: responsável Ana conectada (executa o CT01.1)",
+          "command": "run",
+          "target": "CT01.1 - Criar conta de responsável com dados válidos",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "a0e9ba76-76a4-5298-87bf-d096201772da",
+          "comment": "Passo 1: digitar o endereço da agenda do veterinário",
+          "command": "open",
+          "target": "/agenda",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "f8ef92b0-5287-5253-9d23-594fbcc5acea",
+          "comment": "Passo 2: observar a tela exibida",
+          "command": "waitForElementVisible",
+          "target": "xpath=//div[text()='403']",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "e9f3b900-584b-559e-b15f-08919f9d4b44",
+          "comment": "Resultado esperado: tela de acesso negado",
+          "command": "assertText",
+          "target": "xpath=(//div[text()='Acesso negado'])[last()]",
+          "targets": [],
+          "value": "Acesso negado"
+        },
+        {
+          "id": "484dd435-d090-50f0-96ee-e3b40488466e",
+          "comment": "Nenhum dado da agenda é exibido",
+          "command": "assertElementNotPresent",
+          "target": "xpath=//div[text()='Agenda do dia']",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "08ae3698-cce3-545b-ab61-891c7a796eef",
+          "comment": "Passo 3: tocar no botão de voltar",
+          "command": "click",
+          "target": "xpath=//div[text()='Voltar para a minha área']",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "5e468120-0ad4-5ac1-bb65-c870ba96008b",
+          "comment": "Resultado esperado: volta para a tela inicial de Ana",
+          "command": "waitForElementVisible",
+          "target": "xpath=//div[normalize-space(.)='Olá, Ana Tutora Teste']",
+          "targets": [],
+          "value": "30000"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "132cec2a-5613-5053-b85d-5e5eb588b883",
+      "name": "Todos os testes em sequência (uma janela)",
+      "persistSession": false,
+      "parallel": false,
+      "timeout": 900000,
+      "tests": [
+        "d5d61229-aa92-519f-9e7d-5f78149f5228"
+      ]
+    },
+    {
+      "id": "7faa59d4-9875-528d-a88c-e2e76b885de2",
+      "name": "Testes de interface - YourPetHealth",
+      "persistSession": false,
+      "parallel": false,
+      "timeout": 600000,
+      "tests": [
+        "0ba89b2e-32fc-5f74-8921-b7433c18acdf",
+        "52a98e5a-1c77-5c75-ac69-41207d86f604",
+        "68fa05eb-1ef3-5a27-b613-bf4bf70c19eb",
+        "84346520-7014-53d5-b757-b00ad066be75",
+        "3e253fe0-5a79-5b17-8fb1-7673af890d0e",
+        "50f720c0-731b-5818-854a-c6581f7171ad"
+      ]
+    }
+  ],
+  "snapshot": {
+    "dependencies": {},
+    "tests": [],
+    "jest": {
+      "extraGlobals": []
+    }
+  }
+}

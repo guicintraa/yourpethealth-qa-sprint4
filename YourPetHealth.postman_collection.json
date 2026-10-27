@@ -1,0 +1,1353 @@
+{
+  "info": {
+    "_postman_id": "8c4eb381-e30f-46d7-ae89-adbca5634d49",
+    "name": "YourPetHealth - Testes Automatizados da API",
+    "description": "Testes automatizados de integração da API Java do YourPetHealth. Cada requisição tem o código do caso de teste manual que automatiza (CTxx.y), ligado à história de usuário que ele valida no Azure Boards. Execute na ordem, pelo Collection Runner. Cada execução cria usuários novos (sufixo runId), para que a coleção possa ser rodada várias vezes; os demais dados são fixos.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "00 · Preparação - Confirmar que a API está no ar",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/veterinarios",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "veterinarios"
+          ]
+        },
+        "auth": {
+          "type": "noauth"
+        },
+        "description": "Passo de preparação de dados para os testes seguintes."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Servidor respondeu (sem erro 5xx)', () => pm.expect(pm.response.code).to.be.below(500));",
+              "// Guarda o relógio do servidor (campo timestamp do erro padronizado) para os testes que dependem de horário",
+              "try { const ts = pm.response.json().timestamp; if (ts) pm.collectionVariables.set('relogioServidor', ts); } catch (e) {}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 · CT01.2 - Criar conta de veterinário com CRMV",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/register",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "register"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Bruno Vet Teste\",\n  \"email\": \"vet.{{runId}}@yourpet.test\",\n  \"senha\": \"Senha@123\",\n  \"telefone\": \"11933334444\",\n  \"perfil\": \"VETERINARIO\",\n  \"crmv\": \"{{crmvTeste}}\",\n  \"especialidade\": \"Clinica Geral\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "noauth"
+        },
+        "description": "Automatiza o caso de teste CT01.2 - Criar conta de veterinário com CRMV, que valida a história US01 - Como novo usuário, quero criar minha conta."
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('runId', Date.now());",
+              "// CRMV diferente a cada execução: a API não aceita dois veterinários com o mesmo CRMV",
+              "pm.collectionVariables.set('crmvTeste', 'SP-' + String(Date.now()).slice(-5));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "",
+              "pm.test('Retorna token e perfil VETERINARIO', () => {",
+              "  const j = pm.response.json();",
+              "  pm.expect(j.token).to.be.a('string').and.not.empty;",
+              "  pm.expect(j.usuario.perfil).to.eql('VETERINARIO');",
+              "  pm.expect(j.usuario.veterinarioId).to.not.be.null;",
+              "  pm.expect(j.usuario.responsavelId).to.be.null;",
+              "  pm.collectionVariables.set('vetToken', j.token);",
+              "  pm.collectionVariables.set('vetId', j.usuario.veterinarioId);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 · CT01.4 - Cadastro de veterinário sem CRMV",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/register",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "register"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Carlos Vet\",\n  \"email\": \"vet.semcrmv.{{runId}}@yourpet.test\",\n  \"senha\": \"Senha@123\",\n  \"telefone\": \"11944445555\",\n  \"perfil\": \"VETERINARIO\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "noauth"
+        },
+        "description": "Automatiza o caso de teste CT01.4 - Cadastro de veterinário sem CRMV, que valida a história US01 - Como novo usuário, quero criar minha conta."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 409', () => pm.response.to.have.status(409));",
+              "pm.test('Erro padronizado: 409', () => {",
+              "  const j = pm.response.json();",
+              "  pm.expect(j.erro).to.eql('CONFLITO');",
+              "  pm.expect(j.mensagem).to.be.a('string').and.not.empty;",
+              "});",
+              "pm.test('Regra de negocio vem sem a lista campos', () => {",
+              "  const c = pm.response.json().campos;",
+              "  pm.expect(c === undefined || c === null || c.length === 0).to.be.true;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 · CT01.1 - Criar conta de responsável com dados válidos",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/register",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "register"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Ana Tutora Teste\",\n  \"email\": \"tutor.{{runId}}@yourpet.test\",\n  \"senha\": \"Senha@123\",\n  \"telefone\": \"11911112222\",\n  \"perfil\": \"RESPONSAVEL\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "noauth"
+        },
+        "description": "Automatiza o caso de teste CT01.1 - Criar conta de responsável com dados válidos, que valida a história US01 - Como novo usuário, quero criar minha conta."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "",
+              "pm.test('Retorna token e perfil RESPONSAVEL', () => {",
+              "  const j = pm.response.json();",
+              "  pm.expect(j.usuario.perfil).to.eql('RESPONSAVEL');",
+              "  pm.expect(j.usuario.responsavelId).to.not.be.null;",
+              "  pm.expect(j.usuario.veterinarioId).to.be.null;",
+              "  pm.collectionVariables.set('tutorToken', j.token);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 · CT01.3 - Cadastro com e-mail já cadastrado",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/register",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "register"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Outro Tutor\",\n  \"email\": \"tutor.{{runId}}@yourpet.test\",\n  \"senha\": \"Senha@123\",\n  \"telefone\": \"11955556666\",\n  \"perfil\": \"RESPONSAVEL\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "noauth"
+        },
+        "description": "Automatiza o caso de teste CT01.3 - Cadastro com e-mail já cadastrado, que valida a história US01 - Como novo usuário, quero criar minha conta."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 409', () => pm.response.to.have.status(409));",
+              "pm.test('Erro padronizado: 409', () => {",
+              "  const j = pm.response.json();",
+              "  pm.expect(j.erro).to.eql('CONFLITO');",
+              "  pm.expect(j.mensagem).to.be.a('string').and.not.empty;",
+              "});",
+              "pm.test('Regra de negocio vem sem a lista campos', () => {",
+              "  const c = pm.response.json().campos;",
+              "  pm.expect(c === undefined || c === null || c.length === 0).to.be.true;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 · CT02.2 - Entrar com senha incorreta",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"tutor.{{runId}}@yourpet.test\",\n  \"senha\": \"SenhaErrada1\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "noauth"
+        },
+        "description": "Automatiza o caso de teste CT02.2 - Entrar com senha incorreta, que valida a história US02 - Como usuário, quero entrar na plataforma e continuar conectado."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 401', () => pm.response.to.have.status(401));",
+              "pm.test('Erro padronizado: 401', () => {",
+              "  const j = pm.response.json();",
+              "  pm.expect(j.erro).to.eql('NAO_AUTORIZADO');",
+              "  pm.expect(j.mensagem).to.be.a('string').and.not.empty;",
+              "});",
+              "pm.test('Nao devolve token', () => pm.expect(pm.response.json().token).to.be.undefined);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 · CT02.1 - Entrar com e-mail e senha corretos",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"tutor.{{runId}}@yourpet.test\",\n  \"senha\": \"Senha@123\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "noauth"
+        },
+        "description": "Automatiza o caso de teste CT02.1 - Entrar com e-mail e senha corretos, que valida a história US02 - Como usuário, quero entrar na plataforma e continuar conectado."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "",
+              "pm.test('Retorna token Bearer do responsavel', () => {",
+              "  const j = pm.response.json();",
+              "  pm.expect(j.tipo).to.eql('Bearer');",
+              "  pm.expect(j.usuario.nome).to.eql('Ana Tutora Teste');",
+              "  pm.expect(j.usuario.perfil).to.eql('RESPONSAVEL');",
+              "  pm.collectionVariables.set('tutorToken', j.token);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 · US15 - Acessar os pets sem estar conectado",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/pets",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "pets"
+          ]
+        },
+        "auth": {
+          "type": "noauth"
+        },
+        "description": "Valida a história US15 - Como responsável, quero ter meus dados protegidos de outros usuários no nível da API: sem token, o acesso é recusado."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 401', () => pm.response.to.have.status(401));",
+              "pm.test('Erro padronizado: 401', () => {",
+              "  const j = pm.response.json();",
+              "  pm.expect(j.erro).to.eql('NAO_AUTORIZADO');",
+              "  pm.expect(j.mensagem).to.be.a('string').and.not.empty;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 · CT04.1 - Cadastrar pet com dados válidos",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/pets",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "pets"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Thor\",\n  \"raca\": \"Golden Retriever\",\n  \"idade\": 7,\n  \"peso\": 41.2,\n  \"sexo\": \"MACHO\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tutorToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "description": "Automatiza o caso de teste CT04.1 - Cadastrar pet com dados válidos, que valida a história US04 - Como responsável, quero cadastrar meu pet."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "",
+              "pm.test('Pet criado com os dados enviados', () => {",
+              "  const j = pm.response.json();",
+              "  pm.expect(j.nome).to.eql('Thor');",
+              "  pm.expect(j.peso).to.eql(41.2);",
+              "  pm.expect(j.sexo).to.eql('MACHO');",
+              "  pm.expect(j.totalConsultas).to.eql(0);",
+              "  pm.expect(j.proximaConsulta).to.be.null;",
+              "  pm.collectionVariables.set('petId', j.id);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 · CT04.2 - Cadastrar pet com peso inválido",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/pets",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "pets"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Luna\",\n  \"raca\": \"SRD\",\n  \"idade\": 3,\n  \"peso\": 0,\n  \"sexo\": \"FEMEA\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tutorToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "description": "Automatiza o caso de teste CT04.2 - Cadastrar pet com peso inválido, que valida a história US04 - Como responsável, quero cadastrar meu pet."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 400', () => pm.response.to.have.status(400));",
+              "pm.test('Erro padronizado: 400', () => {",
+              "  const j = pm.response.json();",
+              "  pm.expect(j.erro).to.eql('VALIDACAO');",
+              "  pm.expect(j.mensagem).to.be.a('string').and.not.empty;",
+              "});",
+              "",
+              "pm.test('Aponta o campo peso', () => {",
+              "  const campos = pm.response.json().campos || [];",
+              "  pm.expect(campos.map(c => c.campo)).to.include('peso');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 · CT07.1 - Agendar consulta válida",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/consultas",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "consultas"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"petId\": {{petId}},\n  \"veterinarioId\": {{vetId}},\n  \"tipo\": \"ROTINA\",\n  \"descricao\": \"Check-up semestral\",\n  \"data\": \"{{dataValida}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tutorToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "description": "Automatiza o caso de teste CT07.1 - Agendar consulta válida, que valida a história US07 - Como responsável, quero agendar uma consulta para meu pet."
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const pad = n => String(n).padStart(2, '0');",
+              "const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:00`;",
+              "const proximo = (diaSemana, hora) => {",
+              "  const d = new Date();",
+              "  let delta = (diaSemana - d.getDay() + 7) % 7;",
+              "  if (delta < 2) delta += 7;  // no minimo 2 dias a frente (cancelamento exige 24h)",
+              "  d.setDate(d.getDate() + delta);",
+              "  d.setHours(hora, 0, 0, 0);",
+              "  return d;",
+              "};",
+              "pm.collectionVariables.set('dataValida', fmt(proximo(1, 10)));  // proxima segunda, 10:00"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "",
+              "pm.test('Consulta criada como AGENDADA', () => {",
+              "  const j = pm.response.json();",
+              "  pm.expect(j.status).to.eql('AGENDADA');",
+              "  pm.expect(j.petId).to.eql(pm.collectionVariables.get('petId') * 1);",
+              "  pm.expect(j.observacoes).to.be.null;",
+              "  pm.collectionVariables.set('consultaId', j.id);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 · CT07.2 - Agendar com menos de 2 horas de antecedência",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/consultas",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "consultas"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"petId\": {{petId}},\n  \"veterinarioId\": {{vetId}},\n  \"tipo\": \"ROTINA\",\n  \"descricao\": \"Teste de antecedencia\",\n  \"data\": \"{{dataUmaHora}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tutorToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "description": "Automatiza o caso de teste CT07.2 - Agendar com menos de 2 horas de antecedência, que valida a história US07 - Como responsável, quero agendar uma consulta para meu pet. A data é calculada 1 hora à frente do relógio do próprio servidor, lido na requisição 00."
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const pad = n => String(n).padStart(2, '0');",
+              "const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:00`;",
+              "const proximo = (diaSemana, hora) => {",
+              "  const d = new Date();",
+              "  let delta = (diaSemana - d.getDay() + 7) % 7;",
+              "  if (delta < 2) delta += 7;  // no minimo 2 dias a frente (cancelamento exige 24h)",
+              "  d.setDate(d.getDate() + delta);",
+              "  d.setHours(hora, 0, 0, 0);",
+              "  return d;",
+              "};",
+              "// Base: o relógio do próprio servidor, guardado na requisição 00. Assim o teste vale qualquer que seja o fuso do servidor.",
+              "const ts = pm.collectionVariables.get('relogioServidor');",
+              "const base = ts ? new Date(ts) : new Date();",
+              "base.setMinutes(base.getMinutes() + 60, 0, 0);",
+              "pm.collectionVariables.set('dataUmaHora', fmt(base));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 400', () => pm.response.to.have.status(400));",
+              "pm.test('Erro padronizado: 400', () => {",
+              "  const j = pm.response.json();",
+              "  pm.expect(j.erro).to.eql('VALIDACAO');",
+              "  pm.expect(j.mensagem).to.be.a('string').and.not.empty;",
+              "});",
+              "pm.test('Regra de negocio vem sem a lista campos', () => {",
+              "  const c = pm.response.json().campos;",
+              "  pm.expect(c === undefined || c === null || c.length === 0).to.be.true;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 · CT07.3 - Agendar consulta em um domingo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/consultas",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "consultas"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"petId\": {{petId}},\n  \"veterinarioId\": {{vetId}},\n  \"tipo\": \"ROTINA\",\n  \"descricao\": \"Teste de domingo\",\n  \"data\": \"{{dataDomingo}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tutorToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "description": "Automatiza o caso de teste CT07.3 - Agendar consulta em um domingo, que valida a história US07 - Como responsável, quero agendar uma consulta para meu pet."
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const pad = n => String(n).padStart(2, '0');",
+              "const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:00`;",
+              "const proximo = (diaSemana, hora) => {",
+              "  const d = new Date();",
+              "  let delta = (diaSemana - d.getDay() + 7) % 7;",
+              "  if (delta < 2) delta += 7;  // no minimo 2 dias a frente (cancelamento exige 24h)",
+              "  d.setDate(d.getDate() + delta);",
+              "  d.setHours(hora, 0, 0, 0);",
+              "  return d;",
+              "};",
+              "pm.collectionVariables.set('dataDomingo', fmt(proximo(0, 10)));  // proximo domingo, 10:00"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 400', () => pm.response.to.have.status(400));",
+              "pm.test('Erro padronizado: 400', () => {",
+              "  const j = pm.response.json();",
+              "  pm.expect(j.erro).to.eql('VALIDACAO');",
+              "  pm.expect(j.mensagem).to.be.a('string').and.not.empty;",
+              "});",
+              "pm.test('Regra de negocio vem sem a lista campos', () => {",
+              "  const c = pm.response.json().campos;",
+              "  pm.expect(c === undefined || c === null || c.length === 0).to.be.true;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 · CT07.4 - Agendar com veterinário ocupado",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/consultas",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "consultas"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"petId\": {{petId}},\n  \"veterinarioId\": {{vetId}},\n  \"tipo\": \"RETORNO\",\n  \"descricao\": \"Teste de conflito\",\n  \"data\": \"{{dataValida}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tutorToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "description": "Automatiza o caso de teste CT07.4 - Agendar com veterinário ocupado, que valida a história US07 - Como responsável, quero agendar uma consulta para meu pet."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 409', () => pm.response.to.have.status(409));",
+              "pm.test('Erro padronizado: 409', () => {",
+              "  const j = pm.response.json();",
+              "  pm.expect(j.erro).to.eql('CONFLITO');",
+              "  pm.expect(j.mensagem).to.be.a('string').and.not.empty;",
+              "});",
+              "pm.test('Regra de negocio vem sem a lista campos', () => {",
+              "  const c = pm.response.json().campos;",
+              "  pm.expect(c === undefined || c === null || c.length === 0).to.be.true;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 · CT16.2 - Remover pet com consulta agendada",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/pets/{{petId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "pets",
+            "{{petId}}"
+          ]
+        },
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tutorToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "description": "Automatiza o caso de teste CT16.2 - Remover pet com consulta agendada, que valida a história US16 - Como responsável, quero remover um pet do meu cadastro."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 409', () => pm.response.to.have.status(409));",
+              "pm.test('Erro padronizado: 409', () => {",
+              "  const j = pm.response.json();",
+              "  pm.expect(j.erro).to.eql('CONFLITO');",
+              "  pm.expect(j.mensagem).to.be.a('string').and.not.empty;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 · CT15.1 - Responsável tenta abrir a agenda do veterinário",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/consultas/agenda?data={{hoje}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "consultas",
+            "agenda"
+          ],
+          "query": [
+            {
+              "key": "data",
+              "value": "{{hoje}}"
+            }
+          ]
+        },
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tutorToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "description": "Automatiza o caso de teste CT15.1 - Responsável tenta abrir a agenda do veterinário, que valida a história US15 - Como responsável, quero ter meus dados protegidos de outros usuários."
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const pad = n => String(n).padStart(2, '0');",
+              "const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:00`;",
+              "const proximo = (diaSemana, hora) => {",
+              "  const d = new Date();",
+              "  let delta = (diaSemana - d.getDay() + 7) % 7;",
+              "  if (delta < 2) delta += 7;  // no minimo 2 dias a frente (cancelamento exige 24h)",
+              "  d.setDate(d.getDate() + delta);",
+              "  d.setHours(hora, 0, 0, 0);",
+              "  return d;",
+              "};",
+              "pm.collectionVariables.set('hoje', fmt(new Date()).slice(0, 10));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 403', () => pm.response.to.have.status(403));",
+              "pm.test('Erro padronizado: 403', () => {",
+              "  const j = pm.response.json();",
+              "  pm.expect(j.erro).to.eql('ACESSO_NEGADO');",
+              "  pm.expect(j.mensagem).to.be.a('string').and.not.empty;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "16 · Preparação - Agendar a consulta que será cancelada",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/consultas",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "consultas"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"petId\": {{petId}},\n  \"veterinarioId\": {{vetId}},\n  \"tipo\": \"VACINACAO\",\n  \"descricao\": \"Vacina anual\",\n  \"data\": \"{{dataTarde}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tutorToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "description": "Passo de preparação de dados para os testes seguintes."
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const pad = n => String(n).padStart(2, '0');",
+              "const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:00`;",
+              "const proximo = (diaSemana, hora) => {",
+              "  const d = new Date();",
+              "  let delta = (diaSemana - d.getDay() + 7) % 7;",
+              "  if (delta < 2) delta += 7;  // no minimo 2 dias a frente (cancelamento exige 24h)",
+              "  d.setDate(d.getDate() + delta);",
+              "  d.setHours(hora, 0, 0, 0);",
+              "  return d;",
+              "};",
+              "pm.collectionVariables.set('dataTarde', fmt(proximo(1, 14)));  // proxima segunda, 14:00"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "pm.test('Guarda o id', () => pm.collectionVariables.set('consulta2Id', pm.response.json().id));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "17 · CT10.1 - Cancelar consulta agendada",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/consultas/{{consulta2Id}}/cancelar",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "consultas",
+            "{{consulta2Id}}",
+            "cancelar"
+          ]
+        },
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tutorToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "description": "Automatiza o caso de teste CT10.1 - Cancelar consulta agendada, que valida a história US10 - Como responsável, quero cancelar uma consulta."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "",
+              "pm.test('Status muda para CANCELADA', () => {",
+              "  const j = pm.response.json();",
+              "  pm.expect(j.status).to.eql('CANCELADA');",
+              "  pm.expect(j.podeCancelar).to.be.false;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "18 · CT13.2 - Concluir atendimento com observações curtas",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/consultas/{{consultaId}}/concluir",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "consultas",
+            "{{consultaId}}",
+            "concluir"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"observacoes\": \"Ok, bem.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{vetToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "description": "Automatiza o caso de teste CT13.2 - Concluir atendimento com observações curtas, que valida a história US13 - Como veterinário, quero registrar o atendimento e concluir a consulta."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 400', () => pm.response.to.have.status(400));",
+              "pm.test('Erro padronizado: 400', () => {",
+              "  const j = pm.response.json();",
+              "  pm.expect(j.erro).to.eql('VALIDACAO');",
+              "  pm.expect(j.mensagem).to.be.a('string').and.not.empty;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "19 · CT13.1 - Concluir atendimento com observações válidas",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/consultas/{{consultaId}}/concluir",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "consultas",
+            "{{consultaId}}",
+            "concluir"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"observacoes\": \"Animal saudavel. Vacinas em dia. Retorno em 6 meses.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{vetToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "description": "Automatiza o caso de teste CT13.1 - Concluir atendimento com observações válidas, que valida a história US13 - Como veterinário, quero registrar o atendimento e concluir a consulta."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "",
+              "pm.test('Status muda para REALIZADA', () => {",
+              "  const j = pm.response.json();",
+              "  pm.expect(j.status).to.eql('REALIZADA');",
+              "  pm.expect(j.observacoes).to.include('Animal saudavel');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "20 · CT14.1 - Ver o histórico com o atendimento concluído",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/pets/{{petId}}/historico",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "pets",
+            "{{petId}}",
+            "historico"
+          ]
+        },
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tutorToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "description": "Automatiza o caso de teste CT14.1 - Ver o histórico com o atendimento concluído, que valida a história US14 - Como responsável, quero consultar o histórico clínico do meu pet."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "",
+              "pm.test('Historico contem o registro gerado automaticamente', () => {",
+              "  const lista = pm.response.json();",
+              "  pm.expect(lista).to.be.an('array').that.is.not.empty;",
+              "  pm.expect(lista.some(h => h.descricao.includes('Animal saudavel'))).to.be.true;",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://yourpethealth-java.onrender.com"
+    },
+    {
+      "key": "runId",
+      "value": ""
+    },
+    {
+      "key": "vetToken",
+      "value": ""
+    },
+    {
+      "key": "vetId",
+      "value": ""
+    },
+    {
+      "key": "tutorToken",
+      "value": ""
+    },
+    {
+      "key": "petId",
+      "value": ""
+    },
+    {
+      "key": "consultaId",
+      "value": ""
+    },
+    {
+      "key": "consulta2Id",
+      "value": ""
+    },
+    {
+      "key": "dataValida",
+      "value": ""
+    },
+    {
+      "key": "dataUmaHora",
+      "value": ""
+    },
+    {
+      "key": "dataDomingo",
+      "value": ""
+    },
+    {
+      "key": "dataTarde",
+      "value": ""
+    },
+    {
+      "key": "hoje",
+      "value": ""
+    },
+    {
+      "key": "relogioServidor",
+      "value": ""
+    },
+    {
+      "key": "crmvTeste",
+      "value": ""
+    }
+  ]
+}
