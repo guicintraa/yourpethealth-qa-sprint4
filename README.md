@@ -9,7 +9,7 @@ Plataforma que centraliza a rotina de clínicas veterinárias e de responsáveis
 | Projeto no Azure DevOps (backlog) | https://dev.azure.com/RM562850/Sprint%2004 |
 | Plano de testes manuais (Azure Test Plans) | https://dev.azure.com/RM562850/Sprint%2004/_testPlans/define?planId=187&suiteId=188 |
 | Consulta de rastreabilidade (histórias × casos de teste) | https://dev.azure.com/RM562850/Sprint%2004/_queries/query/4427b07c-9761-4eed-9058-c382b3825a14/ |
-| Vídeo dos testes automatizados | **PREENCHER** |
+| Vídeo dos testes automatizados | https://youtu.be/1Z12URXlZfM |
 | API testada | https://yourpethealth-java.onrender.com |
 
 ## Conteúdo do repositório
