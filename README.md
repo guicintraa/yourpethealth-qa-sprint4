@@ -1,6 +1,6 @@
 # YourPetHealth — Compliance, Quality Assurance & Tests (Sprint 4)
 
-Plataforma que centraliza a rotina de clínicas veterinárias e de responsáveis por pets: cadastro de pets, agendamento de consultas, atendimento veterinário, histórico clínico e acompanhamento da saúde dos animais.
+Plataforma que centraliza a rotina de clínicas veterinárias e de tutores por pets: cadastro de pets, agendamento de consultas, atendimento veterinário, histórico clínico e acompanhamento da saúde dos animais.
 
 ## Links da entrega
 
